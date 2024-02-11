@@ -94,6 +94,8 @@ public class Sneaky {
      *
      * @return a BiConsumer as defined in java.util.function
      */
+
+    @SuppressWarnings("overloads")
     public static <T, U, E extends Exception> BiConsumer<T, U> sneaked(
         SneakyBiConsumer<T, U, E> biConsumer
     ) {
@@ -176,6 +178,7 @@ public class Sneaky {
      *
      * @return a Consumer as defined in java.util.function
      */
+    @SuppressWarnings("overloads")
     public static <T, E extends Exception> Consumer<T> sneaked(SneakyConsumer<T, E> consumer) {
         return t -> {
             @SuppressWarnings("unchecked")

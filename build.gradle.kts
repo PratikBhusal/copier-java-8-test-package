@@ -1,8 +1,8 @@
 import org.checkerframework.gradle.plugin.CheckerFrameworkExtension
+import org.gradle.api.reporting.internal.CustomizableHtmlReportImpl
 import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.javamodularity.moduleplugin.extensions.ModularityExtension
-
-//import org.javamodularity.moduleplugin.extensions.ModularityExtension
+import org.javamodularity.moduleplugin.extensions.CompileTestModuleOptions
 
 // Tip: Use `apply false` in the top-level build.gradle file to add a Gradle
 // plugin as a build dependency but not apply it to the current (root) project.
@@ -19,6 +19,9 @@ plugins {
 
     // Code Coverage
     id("jacoco")
+
+    // Gradle Task Tree View
+    id("com.dorongold.task-tree") version "latest.release"
 
     // Only see code converage on new/modified code
     // TODO: Add configuration
@@ -47,6 +50,8 @@ plugins {
     // Bytecode-based plugin for bug finding
     id("com.github.spotbugs") version "latest.release"
 
+    id("idea")
+
     // Support Java Platform Module System (JPMS) for Java 8 releases
     id("org.javamodularity.moduleplugin") version "latest.release"
 }
@@ -58,14 +63,6 @@ repositories {
     mavenCentral()
 }
 
-tasks.withType<JavaCompile> {
-    options.encoding = Charsets.UTF_8.toString()
-    options.compilerArgs.addAll(listOf(
-        "-Xlint:all",
-        "-Xlint:-options",
-        "-Werror"
-    ))
-}
 
 dependencies {
     ////////////////////////////////////////////////////////////////////////////
@@ -139,10 +136,43 @@ dependencies {
     implementation("io.vavr", "vavr", "1.0.0-alpha-4")
 }
 
-tasks.test {
-    useJUnitPlatform()
-    testLogging {
-        events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+tasks.withType<JavaCompile> {
+    options.encoding = Charsets.UTF_8.toString()
+    options.compilerArgs.addAll(listOf(
+            "-Werror",
+            "-Xlint:all",
+            "-Xlint:-options" // Disables warning about using java 8
+    ))
+}
+
+tasks {
+    test {
+        useJUnitPlatform()
+        testLogging {
+            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        }
+    }
+
+    compileTestJava {
+        options.compilerArgs.addAll(listOf(
+            // Ignore warnings about exposing a default constructs to clients
+            // within the module
+            "-Xlint:-missing-explicit-ctor",
+
+            // Ignores warning messages about undeclared transitive dependencies
+            "-Xlint:-exports"
+        ))
+    }
+}
+
+// Whitebox module testing. Allows testing against java 8 by completely turning
+// off "org.javamodularity.moduleplugin" and only using the classpath while
+// testing
+tasks {
+    compileTestJava {
+        extensions.configure<CompileTestModuleOptions> {
+            isCompileOnClasspath = true
+        }
     }
 }
 
@@ -214,15 +244,36 @@ configure<CheckerFrameworkExtension> {
         "org.checkerframework.checker.nullness.NullnessChecker"
     )
     extraJavacArgs = listOf(
+        // Address the following warning:
+        // warning: No processor claimed any of these annotations: /org.junit.jupiter.api.Test
+        "-Xlint:-processing",
+
         "--module-path",
         configurations.compileClasspath.get().asPath,
     )
 }
 
-//configureigure<ModularityExtension> {
 configure<ModularityExtension> {
     mixedJavaRelease(8)
 }
+
+configure<CheckstyleExtension> {
+    config = resources.text.fromFile(rootProject.file(".config/checkstyle-checks.xml"))
+}
+
+tasks.withType<Pmd> {
+    reports {
+        xml.required = false
+        html.required = true
+    }
+//    isConsoleOutput = true
+    ruleSetConfig = resources.text.fromFile(rootProject.file(".config/pmd.xml"))
+}
+
+//configure<PmdExtension> {
+//    isConsoleOutput = true
+//    ruleSetConfig = resources.text.fromFile(rootProject.file(".config/pmd.xml"))
+//}
 
 tasks.jacocoTestReport {
     // tests are required to run before generating the report
@@ -231,5 +282,6 @@ tasks.jacocoTestReport {
     reports {
         xml.required = false
         csv.required = false
+        html.required = true
     }
 }

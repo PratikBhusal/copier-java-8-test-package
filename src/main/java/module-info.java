@@ -2,7 +2,9 @@
 // the checker framework annotations.
 @SuppressWarnings({
     "requires-static-automatic", "requires-automatic"
-}) module com.rainerhahnekamp.sneakythrow {
+})
+module com.rainerhahnekamp.sneakythrow {
+    exports com.rainerhahnekamp.sneakythrow;
     exports com.rainerhahnekamp.sneakythrow.functional;
 
     // Need to add this for checker framework Java 9+ compatibility, even if I
