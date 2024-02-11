@@ -258,7 +258,11 @@ configure<ModularityExtension> {
 }
 
 configure<CheckstyleExtension> {
-    config = resources.text.fromFile(rootProject.file(".config/checkstyle-checks.xml"))
+//    CheckstyleExtensionconfig = resources.text.fromFile(rootProject.file(".config/checkstyle-checks.xml"))
+    config = resources.text.fromFile(file("${projectDir}/.config/checkstyle-checks.xml"))
+    configProperties = mapOf(
+        "checkstyle.cache.file" to buildDir.resolve("checkstyle/cacheFile")
+    )
 }
 
 tasks.withType<Pmd> {
@@ -266,14 +270,9 @@ tasks.withType<Pmd> {
         xml.required = false
         html.required = true
     }
-//    isConsoleOutput = true
+    isConsoleOutput = true
     ruleSetConfig = resources.text.fromFile(rootProject.file(".config/pmd.xml"))
 }
-
-//configure<PmdExtension> {
-//    isConsoleOutput = true
-//    ruleSetConfig = resources.text.fromFile(rootProject.file(".config/pmd.xml"))
-//}
 
 tasks.jacocoTestReport {
     // tests are required to run before generating the report
