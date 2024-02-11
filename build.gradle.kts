@@ -273,11 +273,16 @@ configure<ModularityExtension> {
 }
 
 configure<CheckstyleExtension> {
-//    CheckstyleExtensionconfig = resources.text.fromFile(rootProject.file(".config/checkstyle-checks.xml"))
     config = resources.text.fromFile(file("${projectDir}/.config/checkstyle-checks.xml"))
     configProperties = mapOf(
-        "checkstyle.cache.file" to buildDir.resolve("checkstyle/cacheFile")
-    )
+        "checkstyle.cache.file" to "build/reports/checkstyle/cacheFile",
+        "checkstyle.suppressions.file" to "build/reports/checkstyle/suppressionsFile",
+        "checkstyle.header.file" to "build/reports/checkstyle/headerFile",
+        "checkstyle.regexp.header.file" to "build/reports/checkstyle/regexpHeaderFile",
+        "checkstyle.suppressions-xpath.file" to "build/reports/checkstyle/suppressionsXpathFile"
+    ).mapValues {
+        layout.buildDirectory.file(it.value).get().asFile
+    }
 }
 
 tasks.withType<Pmd> {
