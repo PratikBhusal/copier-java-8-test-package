@@ -146,13 +146,6 @@ tasks.withType<JavaCompile> {
 }
 
 tasks {
-    test {
-        useJUnitPlatform()
-        testLogging {
-            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-        }
-    }
-
     compileTestJava {
         options.compilerArgs.addAll(listOf(
             // Ignore warnings about exposing a default constructs to clients
@@ -162,6 +155,28 @@ tasks {
             // Ignores warning messages about undeclared transitive dependencies
             "-Xlint:-exports"
         ))
+    }
+
+    test {
+        // After running test, always generate report
+        finalizedBy(jacocoTestReport)
+
+        useJUnitPlatform()
+        testLogging {
+            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+        }
+    }
+
+
+    jacocoTestReport {
+        // Before generating report, always run tests
+        dependsOn(test)
+
+        reports {
+            xml.required = false
+            csv.required = false
+            html.required = true
+        }
     }
 }
 
@@ -272,15 +287,4 @@ tasks.withType<Pmd> {
     }
     isConsoleOutput = true
     ruleSetConfig = resources.text.fromFile(rootProject.file(".config/pmd.xml"))
-}
-
-tasks.jacocoTestReport {
-    // tests are required to run before generating the report
-    dependsOn(tasks.test)
-
-    reports {
-        xml.required = false
-        csv.required = false
-        html.required = true
-    }
 }
