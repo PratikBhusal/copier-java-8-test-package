@@ -1,0 +1,21 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: 8bdac75
+_src_path: /home/pratik/workplace/copier-java-template
+author_email: PratikBhusal@users.noreply.github.com
+author_fullname: Pratik Bhusal
+author_username: PratikBhusal
+copyright_holder: Pratik Bhusal
+copyright_holder_email: PratikBhusal@users.noreply.github.com
+copyright_license: ISC License
+have_dependency_injection_framework: true
+java_ide: other
+project_artifact_id: hello-world
+project_description: &#39;&#39;
+project_group_id: org.example
+project_name: Hello World
+project_version: 1.0-SNAPSHOT
+repository_name: hello-world
+support_modular_jars_for_java_8: true
+use_apache_commons_lang_library: true
+use_functional_programming_library: true
+use_guava_library: true
